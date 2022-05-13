@@ -105,17 +105,27 @@ namespace Excel2DataModel
 
 					element.Attributes.Refresh();
 
+					// 制約作成
 					var key = (EA.Attribute)element.Attributes.GetAt(0);
 					if (key == null) continue;
 					if (key.Alias == "ID")
 					{
-						// 制約作成
-						var constraint = (EA.Constraint)element.Constraints.AddNew($"PK_{sheet.Cell("C6").Value}", "PK");
-						constraint.Weight = key.AttributeID;
-						constraint.Update();
+						// 制約の名前と種類を作成
+						var method = (EA.Method)element.Methods.AddNew($"PK_{sheet.Cell("C6").Value}", "");
+						method.Stereotype = "PK";
+						method.Concurrency = "Sequential";
+						method.Update();
+
+						// 制約対象を作成
+						var param = (EA.Parameter)method.Parameters.AddNew(key.Name, key.Type);
+						param.Alias = key.Alias;
+						param.Kind = "in";
+						param.Update();
+
+						method.Parameters.Refresh();
+						method.Update();
 					}
 				}
-
 				Close();
 			};
 		}
