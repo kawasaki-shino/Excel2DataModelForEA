@@ -11,5 +11,22 @@
 		{
 			var dialog = new Dialog(repository).ShowDialog();
 		}
+
+		/// <summary>
+		/// 選択中の要素を取得（デバッグ用）
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="menuLocation"></param>
+		/// <param name="menuName"></param>
+		/// <param name="itemName"></param>
+		/// <returns></returns>
+		public EA.Element GetSeletedElement(EA.Repository repository, string menuLocation, string menuName, string itemName)
+		{
+			var diagram = repository.GetCurrentDiagram();
+			var diagramObject = (EA.DiagramObject)diagram.SelectedObjects.GetAt(0);
+			var ret = repository.GetElementByID(diagramObject.ElementID);
+
+			return ret;
+		}
 	}
 }
