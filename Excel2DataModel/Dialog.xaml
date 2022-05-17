@@ -8,10 +8,10 @@
     <Grid Background="White" Margin="8">
         <DockPanel>
 	        <TextBlock Text="テーブル定義書を指定してください" FontSize="14" DockPanel.Dock="Top" Margin="0 0 0 8"/>
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0 0 0 16">
-				<TextBox x:Name="TbxFileName" Width="400" Height="24" VerticalAlignment="Top" IsReadOnly="True" VerticalContentAlignment="Center" Foreground="Black"/>
-				<Button x:Name="BtnReference" VerticalAlignment="Top" Content="参照" Height="24" Width="36" Margin="8 0 0 0" Background="CornflowerBlue" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-            </StackPanel>
+            <DockPanel  DockPanel.Dock="Top" Margin="0 0 0 16">
+	            <Button x:Name="BtnReference" DockPanel.Dock="Right" VerticalAlignment="Top" Content="参照" Height="24" Width="36" Margin="8 0 0 0" Background="CornflowerBlue" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+	            <TextBox x:Name="TbxFileName" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="400" Height="24" VerticalAlignment="Top" IsReadOnly="True" VerticalContentAlignment="Center" Foreground="Black"/>
+            </DockPanel>
 	        <TextBlock Text="機能名を指定してください" FontSize="14" DockPanel.Dock="Top" Margin="0 0 0 8"/>
 	        <TextBox x:Name="TbxFunctionName" Width="400" Height="24" VerticalAlignment="Top" VerticalContentAlignment="Center" Foreground="Black"/>
 	        <Button x:Name="BtnOk" DockPanel.Dock="Top" Height="24" Width="36" Content="OK" FontWeight="Bold" Background="MediumSeaGreen" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>

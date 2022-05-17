@@ -41,6 +41,8 @@ namespace Excel2DataModel
 				var diagram = (EA.Diagram)package.Diagrams.AddNew(TbxFunctionName.Text, "Logical");
 				diagram.MetaType = "Extended::Data Modeling";
 				diagram.Version = "1.0";
+				diagram.StyleEx =
+					"ExcludeRTF=0;DocAll=0;HideQuals=0;AttPkg=1;ShowTests=1;ShowMaint=1;SuppressFOC=1;MatrixActive=0;SwimlanesActive=1;KanbanActive=0;MatrixLineWidth=1;MatrixLineClr=0;MatrixLocked=0;TConnectorNotation=Information Engineering;TExplicitNavigability=0;AdvancedElementProps=1;AdvancedFeatureProps=1;AdvancedConnectorProps=1;m_bElementClassifier=1;SPT=1;MDGDgm=Extended::Data Modeling;STBLDgm=;ShowNotes=1;VisibleAttributeDetail=0;ShowOpRetType=1;SuppressBrackets=0;SuppConnectorLabels=0;PrintPageHeadFoot=0;ShowAsList=0;SuppressedCompartments=;Theme=:119;SD=1;SR=1;SRES=1;SIA=1;SIO=1;SIT=1;SFQT=1;SIR=1;SIC=1;ShowProject=1;ShowScenarios=1;SaveTag=E8B0C7D1;";
 				diagram.Update();
 
 				// テーブル作成
@@ -74,6 +76,9 @@ namespace Excel2DataModel
 						// PK
 						if (sheet.Cell(currentRow, 3).Value.ToString() == "ID") attribute.IsOrdered = true;
 
+						// FK
+						if (sheet.Cell(currentRow, 3).Value.ToString() == "REC_ID") attribute.IsCollection = true;
+
 						// 位置
 						attribute.Pos = position;
 
@@ -104,11 +109,11 @@ namespace Excel2DataModel
 					}
 
 					element.Attributes.Refresh();
+					package.Elements.Refresh();
 
-					// 制約作成
-					var key = (EA.Attribute)element.Attributes.GetAt(0);
-					if (key == null) continue;
-					if (key.Alias == "ID")
+					// PK制約作成
+					var key = element.Attributes.Cast<EA.Attribute>().FirstOrDefault(n => n.Alias == "ID");
+					if (key != null)
 					{
 						// 制約の名前と種類を作成
 						var method = (EA.Method)element.Methods.AddNew($"PK_{sheet.Cell("C6").Value}", "");
@@ -124,6 +129,72 @@ namespace Excel2DataModel
 
 						method.Parameters.Refresh();
 						method.Update();
+					}
+
+					element.Methods.Refresh();
+
+					// ジャーナルのFK制約作成
+					if (element.Name.Contains("ジャーナル"))
+					{
+						// 前提条件をチェック
+						// FKの参照先を探す
+						var parentElement =
+							package.Elements.Cast<EA.Element>().FirstOrDefault(n => n.Name == element.Name.Substring(0, element.Name.Length - 6));
+						if (parentElement == null) continue;
+
+						var parentMethod = parentElement.Methods.Cast<EA.Method>()
+							.FirstOrDefault(n => n.Stereotype == "PK");
+						if (parentMethod == null) continue;
+
+						// FKとなる列
+						var fkAttribute = element.Attributes.Cast<EA.Attribute>()
+							.FirstOrDefault(n => n.Alias == "REC_ID");
+						if (fkAttribute == null) continue;
+
+						// 制約の名前と種類を作成
+						var method = (EA.Method)element.Methods.AddNew(
+							$"FK_{element.Name}_{parentElement.Name}", "");
+						method.Stereotype = "FK";
+						method.Concurrency = "Sequential";
+						method.StyleEx = $"FKIDX={parentMethod.MethodID}";
+						method.Update();
+
+						var param = (EA.Parameter)method.Parameters.AddNew(fkAttribute.Name, fkAttribute.Type);
+						param.Alias = fkAttribute.Alias;
+						param.Kind = "in";
+						param.Update();
+
+						method.Parameters.Refresh();
+						method.Update();
+						element.Methods.Refresh();
+
+						// コネクターの追加
+						var connector = (EA.Connector)element.Connectors.AddNew("AAA", "Association");
+						connector.Stereotype = "FK";
+						connector.Direction = "Source -> Destination";
+						connector.StyleEx = $"FKINFO=SRC={element.Name}:DST={parentElement.Name}";
+
+
+						// ソース側設定
+						connector.ClientID = element.ElementID;
+						connector.ClientEnd.Cardinality = "1..*";
+						connector.ClientEnd.Constraint = "Unspecified";
+						connector.ClientEnd.IsChangeable = "none";
+						connector.ClientEnd.Navigable = "Unspecified";
+						connector.ClientEnd.Role = element.Methods.Cast<EA.Method>()
+							.FirstOrDefault(n => n.Stereotype == "FK")?.Name;
+
+						// ターゲット側設定
+						connector.SupplierID = parentElement.ElementID;
+						connector.SupplierEnd.Cardinality = "1";
+						connector.SupplierEnd.Constraint = "Unspecified";
+						connector.SupplierEnd.IsChangeable = "none";
+						connector.SupplierEnd.Navigable = "Navigable";
+						connector.SupplierEnd.Role = parentElement.Methods.Cast<EA.Method>()
+							.FirstOrDefault(n => n.Stereotype == "PK")?.Name;
+
+						connector.Update();
+						element.Connectors.Refresh();
 					}
 				}
 				Close();

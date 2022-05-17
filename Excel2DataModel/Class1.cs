@@ -1,4 +1,7 @@
-﻿namespace Excel2DataModel
+﻿using System.Linq;
+using DocumentFormat.OpenXml.Drawing.Charts;
+
+namespace Excel2DataModel
 {
 	public class Class1
 	{
@@ -20,11 +23,27 @@
 		/// <param name="menuName"></param>
 		/// <param name="itemName"></param>
 		/// <returns></returns>
-		public EA.Element GetSeletedElement(EA.Repository repository, string menuLocation, string menuName, string itemName)
+		public EA.Element GetSelectedElement(EA.Repository repository, string menuLocation, string menuName, string itemName)
 		{
 			var diagram = repository.GetCurrentDiagram();
 			var diagramObject = (EA.DiagramObject)diagram.SelectedObjects.GetAt(0);
 			var ret = repository.GetElementByID(diagramObject.ElementID);
+
+			return ret;
+		}
+
+		/// <summary>
+		/// 選択中のConnectorを取得（デバッグ用）
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="menuLocation"></param>
+		/// <param name="menuName"></param>
+		/// <param name="itemName"></param>
+		/// <returns></returns>
+		public EA.Connector GetSelectedConnector(EA.Repository repository, string menuLocation, string menuName, string itemName)
+		{
+			var diagram = repository.GetCurrentDiagram();
+			var ret = diagram.SelectedConnector;
 
 			return ret;
 		}
