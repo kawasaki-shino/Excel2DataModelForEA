@@ -52,7 +52,7 @@ namespace Excel2DataModel
 					if (sheet.Visibility != XLWorksheetVisibility.Visible) continue;
 
 					// テーブルエレメント作成
-					var element = (EA.Element)package.Elements.AddNew(sheet.Cell("C6").Value.ToString(), "Table");
+					var element = (EA.Element)package.Elements.AddNew(sheet.Cell("C6").Value.ToString().Trim().Trim('\u200B'), "Table");
 					element.Stereotype = "table";
 					element.Gentype = "Oracle";
 					element.Update();
@@ -67,39 +67,39 @@ namespace Excel2DataModel
 					while (true)
 					{
 						// 論理名のセルを見て出力するか否かを判定
-						if (string.IsNullOrWhiteSpace(sheet.Cell(currentRow, 2).Value.ToString())) break;
+						if (string.IsNullOrWhiteSpace(sheet.Cell(currentRow, 2).Value.ToString().Trim().Trim('\u200B'))) break;
 
 						// 属性作成
-						var attribute = (EA.Attribute)element.Attributes.AddNew(sheet.Cell(currentRow, 2).Value.ToString(), sheet.Cell(currentRow, 4).Value.ToString());
+						var attribute = (EA.Attribute)element.Attributes.AddNew(sheet.Cell(currentRow, 2).Value.ToString().Trim().Trim('\u200B'), sheet.Cell(currentRow, 4).Value.ToString().Trim().Trim('\u200B'));
 						attribute.Stereotype = "column";
 
 						// PK
-						if (sheet.Cell(currentRow, 3).Value.ToString() == "ID") attribute.IsOrdered = true;
+						if (sheet.Cell(currentRow, 3).Value.ToString().Trim().Trim('\u200B') == "ID") attribute.IsOrdered = true;
 
 						// FK
-						if (sheet.Cell(currentRow, 3).Value.ToString() == "REC_ID") attribute.IsCollection = true;
+						if (sheet.Cell(currentRow, 3).Value.ToString().Trim().Trim('\u200B') == "REC_ID") attribute.IsCollection = true;
 
 						// 位置
 						attribute.Pos = position;
 
 						// 別名
-						attribute.Alias = sheet.Cell(currentRow, 3).Value.ToString();
+						attribute.Alias = sheet.Cell(currentRow, 3).Value.ToString().Trim().Trim('\u200B');
 
-						if (attribute.Type == "VARCHAR2" || attribute.Type == "CHAR") attribute.Length = sheet.Cell(currentRow, 5).Value.ToString();
+						if (attribute.Type == "VARCHAR2" || attribute.Type == "CHAR") attribute.Length = sheet.Cell(currentRow, 5).Value.ToString().Trim().Trim('\u200B');
 
 						// サイズと小数桁数
 						if (attribute.Type == "NUMBER")
 						{
-							attribute.Precision = sheet.Cell(currentRow, 5).Value.ToString();
+							attribute.Precision = sheet.Cell(currentRow, 5).Value.ToString().Trim().Trim('\u200B');
 							attribute.Scale = "0";
 						}
 
 						// 初期値
-						attribute.Default = sheet.Cell(currentRow, 7).Value.ToString();
+						attribute.Default = sheet.Cell(currentRow, 7).Value.ToString().Trim().Trim('\u200B');
 
 						// 必須
-						if (sheet.Cell(currentRow, 10).Value.ToString() == "○" ||
-							sheet.Cell(currentRow, 10).Value.ToString() == "〇") attribute.AllowDuplicates = true;
+						if (sheet.Cell(currentRow, 10).Value.ToString().Trim().Trim('\u200B') == "○" ||
+							sheet.Cell(currentRow, 10).Value.ToString().Trim().Trim('\u200B') == "〇") attribute.AllowDuplicates = true;
 
 						// 更新
 						attribute.Update();
@@ -116,7 +116,7 @@ namespace Excel2DataModel
 					if (key != null)
 					{
 						// 制約の名前と種類を作成
-						var method = (EA.Method)element.Methods.AddNew($"PK_{sheet.Cell("C6").Value}", "");
+						var method = (EA.Method)element.Methods.AddNew($"PK_{sheet.Cell("C6").Value.ToString().Trim().Trim('\u200B')}", "");
 						method.Stereotype = "PK";
 						method.Concurrency = "Sequential";
 						method.Update();
